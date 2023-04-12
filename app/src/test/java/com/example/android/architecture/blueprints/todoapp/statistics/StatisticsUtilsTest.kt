@@ -29,4 +29,20 @@ class StatisticsUtilsTest {
         assertEquals(40f, result.completedTasksPercent)
         assertEquals(60f, result.activeTasksPercent)
     }
+
+    @Test
+    fun getActiveAndCompletedStats_empty_returnsZero() {
+        val tasks = listOf<Task>()
+        val result = getActiveAndCompletedStats(tasks)
+        assertEquals(0f, result.completedTasksPercent)
+        assertEquals(0f, result.activeTasksPercent)
+    }
+
+    @Test
+    fun getActiveAndCompletedStats_null_returnsZero() {
+        val tasks = null
+        val result = getActiveAndCompletedStats(tasks)
+        assertEquals(0f, result.completedTasksPercent)
+        assertEquals(0f, result.activeTasksPercent)
+    }
 }
