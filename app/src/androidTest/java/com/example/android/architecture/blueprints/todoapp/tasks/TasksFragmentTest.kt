@@ -1,10 +1,12 @@
 package com.example.android.architecture.blueprints.todoapp.tasks
 
 import android.annotation.SuppressLint
+import android.content.Context
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.RecyclerView
+import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
@@ -13,6 +15,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.ServiceLocator
+import com.example.android.architecture.blueprints.todoapp.addedittask.AddEditTaskFragment
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeAndroidTestRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -67,6 +70,27 @@ class TasksFragmentTest {
          */
         verify(mockNavController).navigate(
             TasksFragmentDirections.actionTasksFragmentToTaskDetailFragment(task1.id)
+        )
+    }
+
+    @Test
+    fun clickFAB_navigatesToAddEditTaskFragment() {
+        val scenario = launchFragmentInContainer<TasksFragment>(themeResId = R.style.AppTheme)
+        val mockNavController = mock(NavController::class.java)
+        scenario.onFragment {
+            Navigation.setViewNavController(it.view!!, mockNavController)
+        }
+
+        // WHEN click on FAB button
+        onView(withId(R.id.add_task_fab)).perform(click())
+
+        // THEN navigate to AddEditTaskFragment
+        // verify that navigate() was called, with null and 'New Task' arguments
+        verify(mockNavController).navigate(
+            TasksFragmentDirections.actionTasksFragmentToAddEditTaskFragment(
+                null,
+                getApplicationContext<Context>().getString(R.string.add_task)
+            )
         )
     }
 }
