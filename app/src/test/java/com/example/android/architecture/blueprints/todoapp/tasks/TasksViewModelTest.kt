@@ -5,6 +5,7 @@ import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.android.architecture.blueprints.todoapp.Event
+import com.example.android.architecture.blueprints.todoapp.MainCoroutineRule
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeTasksRepository
@@ -28,17 +29,8 @@ class TasksViewModelTest {
     private lateinit var viewModel: TasksViewModel
     private lateinit var repository: FakeTasksRepository
 
-    private val testDispatcher = TestCoroutineDispatcher()
-
-    @Before
-    fun setupDispatcher() {
-        Dispatchers.setMain(testDispatcher)
-    }
-    @After
-    fun tearDownDispatcher() {
-        Dispatchers.resetMain()
-        testDispatcher.cleanupTestCoroutines()
-    }
+    @get:Rule
+    val mainCoroutineRule = MainCoroutineRule()
 
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()

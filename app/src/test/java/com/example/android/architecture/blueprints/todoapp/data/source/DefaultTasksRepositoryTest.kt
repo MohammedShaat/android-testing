@@ -1,5 +1,6 @@
 package com.example.android.architecture.blueprints.todoapp.data.source
 
+import com.example.android.architecture.blueprints.todoapp.MainCoroutineRule
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -7,9 +8,15 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.core.IsEqual
 import org.junit.Assert.*
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 
+@ExperimentalCoroutinesApi
 class DefaultTasksRepositoryTest {
+
+    @get:Rule
+    val mainCoroutineRule = MainCoroutineRule()
+
     private lateinit var repository: DefaultTasksRepository
     private lateinit var tasksRemoteDataSource: FakeDataSource
     private lateinit var tasksLocalDataSource: FakeDataSource
@@ -29,13 +36,13 @@ class DefaultTasksRepositoryTest {
         repository = DefaultTasksRepository(
             tasksRemoteDataSource,
             tasksLocalDataSource,
-            Dispatchers.Unconfined
+            Dispatchers.Main
         )
     }
 
     @ExperimentalCoroutinesApi
     @Test
-    fun getTasks_true_requestsAllTasksFromRemoteDataSource() = runBlockingTest {
+    fun getTasks_true_requestsAllTasksFromRemoteDataSource() = mainCoroutineRule.runBlockingTest {
         // WHEN call getTasks, with forceUpdate = true
         repository.getTasks(true)
 
