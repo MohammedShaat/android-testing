@@ -4,7 +4,9 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.example.android.architecture.blueprints.todoapp.MainCoroutineRule
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeTasksRepository
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
+import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.hamcrest.CoreMatchers.`is`
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
@@ -30,6 +32,13 @@ class StatisticsViewModelTest {
     }
 
     @Test
-    fun testing() {}
+    fun refresh_refreshesTasksAndShowIndicator() {
+        val indicator = viewModel.dataLoading
+        mainCoroutineRule.pauseDispatcher()
+        viewModel.refresh()
+        assertThat(indicator.getOrAwaitValue(), `is`(true))
+        mainCoroutineRule.resumeDispatcher()
+        assertThat(indicator.getOrAwaitValue(), `is`(false))
+    }
 
 }
