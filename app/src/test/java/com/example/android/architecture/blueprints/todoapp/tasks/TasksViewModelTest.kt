@@ -5,20 +5,40 @@ import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.android.architecture.blueprints.todoapp.Event
+import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeTasksRepository
 import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
 import org.hamcrest.CoreMatchers.*
+import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@ExperimentalCoroutinesApi
 class TasksViewModelTest {
 
     private lateinit var viewModel: TasksViewModel
     private lateinit var repository: FakeTasksRepository
+
+    private val testDispatcher = TestCoroutineDispatcher()
+
+    @Before
+    fun setupDispatcher() {
+        Dispatchers.setMain(testDispatcher)
+    }
+    @After
+    fun tearDownDispatcher() {
+        Dispatchers.resetMain()
+        testDispatcher.cleanupTestCoroutines()
+    }
 
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
@@ -52,5 +72,20 @@ class TasksViewModelTest {
 
         // THEN tasksAddViewVisible is true
         assertThat(tasksAddViewVisible, `is`(true))
+    }
+
+    @Test
+    fun completeTask_dataAndSnackbarUpdated() {
+        // GIVEN an active task
+        val task = Task("title", "description", false)
+        repository.addTasks(task)
+
+        // WHEN complete the task
+        viewModel.completeTask(task, true)
+
+        // THEN the task and snackbar are updated
+        assertThat(repository.tasksServiceData[task.id]?.isCompleted, `is`(true))
+        val snackbar = viewModel.snackbarText.getOrAwaitValue()
+        assertThat(snackbar.getContentIfNotHandled(), `is`(R.string.task_marked_complete))
     }
 }
