@@ -18,7 +18,7 @@ class FakeTasksRepository : TasksRepository {
     var tasksServiceData: LinkedHashMap<String, Task> = LinkedHashMap()
 
     private val observableTasks = MutableLiveData<Result<List<Task>>>()
-
+    var shouldReturnError = false
 
     override suspend fun refreshTasks() {
         observableTasks.value = getTasks()
@@ -49,6 +49,7 @@ class FakeTasksRepository : TasksRepository {
     }
 
     override suspend fun getTask(taskId: String, forceUpdate: Boolean): Result<Task> {
+        shouldReturnError && return Error(Exception("Test Exception"))
         tasksServiceData[taskId]?.let {
             return Success(it)
         }
@@ -56,6 +57,7 @@ class FakeTasksRepository : TasksRepository {
     }
 
     override suspend fun getTasks(forceUpdate: Boolean): Result<List<Task>> {
+        shouldReturnError && return Error(Exception("Test Exception"))
         return Success(tasksServiceData.values.toList())
     }
 
