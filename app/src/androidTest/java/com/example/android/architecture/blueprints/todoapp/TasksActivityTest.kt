@@ -1,8 +1,10 @@
 package com.example.android.architecture.blueprints.todoapp
 
+import android.provider.ContactsContract.Data
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -12,6 +14,7 @@ import androidx.test.filters.LargeTest
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksActivity
+import com.example.android.architecture.blueprints.todoapp.util.EspressoIdlingResource
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.After
@@ -24,6 +27,8 @@ import org.junit.runner.RunWith
 class TasksActivityTest {
 
     private lateinit var repository: TasksRepository
+
+    private var dataBindingIdlingResource = DataBindingIdlingResource()
 
     @Before
     fun setupRepository() {
@@ -38,12 +43,25 @@ class TasksActivityTest {
         ServiceLocator.resetRepository()
     }
 
+    @Before
+    fun registerIdlingResource() {
+        IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
+        IdlingRegistry.getInstance().register(dataBindingIdlingResource)
+    }
+
+    @After
+    fun unregisterIdlingResource() {
+        IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
+        IdlingRegistry.getInstance().unregister(dataBindingIdlingResource)
+    }
+
     @Test
     fun editTask() = runBlocking {
         // GIVEN a task
         repository.saveTask(Task("title1", "description1"))
 
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
+        dataBindingIdlingResource.monitorActivity(activityScenario)
         // WHEN edit the task
         // Click on the task
         onView(withText("title1")).perform(click())
