@@ -22,6 +22,7 @@ import org.junit.runner.RunWith
 class TasksDaoTest {
 
     private lateinit var database: ToDoDatabase
+    private lateinit var tasksDao: TasksDao
 
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
@@ -32,6 +33,7 @@ class TasksDaoTest {
             ApplicationProvider.getApplicationContext(),
             ToDoDatabase::class.java
         ).build()
+        tasksDao = database.taskDao()
     }
 
     @After
@@ -40,16 +42,34 @@ class TasksDaoTest {
     }
 
     @Test
-    fun insertTaskANDgetTaskById() = runBlockingTest {
+    fun insertTask_getTaskById() = runBlockingTest {
         // Given a task
         val task = Task("title", "description")
 
-        val dao = database.taskDao()
         // WHEN insert the task by insert(task), and call getTaskById(task.id)
-        dao.insertTask(task)
-        val loadedTask = dao.getTaskById(task.id)
+        tasksDao.insertTask(task)
+        val loadedTask = tasksDao.getTaskById(task.id)
 
         // THEN the loaded task is the inserted one
         assertThat(loadedTask, `is`(task))
+    }
+
+    @Test
+    fun insertTask_updateTask() = runBlockingTest {
+        // GIVEN a task
+        val task = Task("Active", "description", false)
+        
+        // WHEN insert the task, and then update its 'title' & `isCompleted` to "Completed" & true
+        tasksDao.insertTask(task)
+        task.title = "Completed"
+        task.isCompleted = true
+        tasksDao.updateTask(task)
+
+        val loadedTask = tasksDao.getTaskById(task.id)
+        // THEN loaded task is equal to the updated task
+        assertThat(loadedTask?.id, `is`(task.id))
+        assertThat(loadedTask?.title, `is`(task.title))
+        assertThat(loadedTask?.description, `is`(task.description))
+        assertThat(loadedTask?.isCompleted, `is`(task.isCompleted))
     }
 }
